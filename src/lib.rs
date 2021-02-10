@@ -25,7 +25,7 @@ pub enum LoraMode {
     P2P = 1,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum LoraRegion {
     EU868,
     US915,
