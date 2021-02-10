@@ -45,7 +45,6 @@ pub type AppsKey = [u8; 16];
 
 #[derive(Debug, Clone, Copy)]
 pub struct LoraConfig {
-    pub connect_mode: Option<ConnectMode>,
     pub band: Option<LoraRegion>,
     pub lora_mode: Option<LoraMode>,
     pub device_address: Option<DevAddr>,
@@ -57,7 +56,6 @@ pub struct LoraConfig {
 impl LoraConfig {
     pub fn new() -> Self {
         Self {
-            connect_mode: None,
             band: None,
             lora_mode: None,
             device_address: None,
@@ -65,11 +63,6 @@ impl LoraConfig {
             app_eui: None,
             app_key: None,
         }
-    }
-
-    pub fn connect_mode(mut self, mode: ConnectMode) -> Self {
-        self.connect_mode.replace(mode);
-        self
     }
 
     pub fn band(mut self, band: LoraRegion) -> Self {
