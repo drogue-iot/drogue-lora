@@ -18,7 +18,7 @@ pub enum ConnectMode {
     ABP,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u8)]
 pub enum LoraMode {
     WAN = 0,
