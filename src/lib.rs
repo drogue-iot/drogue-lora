@@ -37,11 +37,16 @@ pub enum LoraRegion {
 }
 
 pub type Port = u8;
-pub type DevAddr = [u8; 4];
-pub type EUI = [u8; 8];
-pub type AppKey = [u8; 16];
-pub type NwksKey = [u8; 16];
-pub type AppsKey = [u8; 16];
+#[derive(Debug, Clone, Copy)]
+pub struct DevAddr([u8; 4]);
+#[derive(Debug, Clone, Copy)]
+pub struct EUI([u8; 8]);
+#[derive(Debug, Clone, Copy)]
+pub struct AppKey([u8; 16]);
+#[derive(Debug, Clone, Copy)]
+pub struct NwksKey([u8; 16]);
+#[derive(Debug, Clone, Copy)]
+pub struct AppsKey([u8; 16]);
 
 #[derive(Debug, Clone, Copy)]
 pub struct LoraConfig {
@@ -93,5 +98,119 @@ impl LoraConfig {
     pub fn app_key(mut self, app_key: &AppKey) -> Self {
         self.app_key.replace(app_key.clone());
         self
+    }
+}
+
+impl core::convert::From<&str> for EUI {
+    fn from(input: &str) -> Self {
+        assert!(input.len() >= 16);
+        let mut b = [0; 8];
+        for i in 0..b.len() {
+            b[i] = u8::from_str_radix(&input[(i * 2)..(i * 2) + 2], 16).unwrap();
+        }
+        EUI(b)
+    }
+}
+
+impl core::fmt::Display for EUI {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], self.0[5], self.0[6], self.0[7]
+        )
+    }
+}
+
+impl core::convert::From<&str> for DevAddr {
+    fn from(input: &str) -> Self {
+        assert!(input.len() >= 8);
+        let mut b = [0; 4];
+        for i in 0..b.len() {
+            b[i] = u8::from_str_radix(&input[(i * 2)..(i * 2) + 2], 16).unwrap();
+        }
+        DevAddr(b)
+    }
+}
+
+impl core::fmt::Display for DevAddr {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "{:02x}{:02x}{:02x}{:02x}",
+            self.0[0], self.0[1], self.0[2], self.0[3]
+        )
+    }
+}
+
+impl core::convert::From<&str> for AppKey {
+    fn from(input: &str) -> Self {
+        assert!(input.len() >= 32);
+        let mut b = [0; 16];
+        for i in 0..b.len() {
+            b[i] = u8::from_str_radix(&input[(i * 2)..(i * 2) + 2], 16).unwrap();
+        }
+        AppKey(b)
+    }
+}
+
+impl core::fmt::Display for AppKey {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+            self.0[0], self.0[1], self.0[2], self.0[3],
+            self.0[4], self.0[5], self.0[6], self.0[7],
+            self.0[8], self.0[9], self.0[10], self.0[11],
+            self.0[12], self.0[13], self.0[14], self.0[15],
+        )
+    }
+}
+
+impl core::convert::From<&str> for NwksKey {
+    fn from(input: &str) -> Self {
+        assert!(input.len() >= 32);
+        let mut b = [0; 16];
+        for i in 0..b.len() {
+            b[i] = u8::from_str_radix(&input[(i * 2)..(i * 2) + 2], 16).unwrap();
+        }
+        NwksKey(b)
+    }
+}
+
+impl core::fmt::Display for NwksKey {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+            self.0[0], self.0[1], self.0[2], self.0[3],
+            self.0[4], self.0[5], self.0[6], self.0[7],
+            self.0[8], self.0[9], self.0[10], self.0[11],
+            self.0[12], self.0[13], self.0[14], self.0[15],
+        )
+    }
+}
+
+impl core::convert::From<&str> for AppsKey {
+    fn from(input: &str) -> Self {
+        assert!(input.len() >= 32);
+        let mut b = [0; 16];
+        for i in 0..b.len() {
+            b[i] = u8::from_str_radix(&input[(i * 2)..(i * 2) + 2], 16).unwrap();
+        }
+        AppsKey(b)
+    }
+}
+
+impl core::fmt::Display for AppsKey {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(
+            f,
+            "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+            self.0[0], self.0[1], self.0[2], self.0[3],
+            self.0[4], self.0[5], self.0[6], self.0[7],
+            self.0[8], self.0[9], self.0[10], self.0[11],
+            self.0[12], self.0[13], self.0[14], self.0[15],
+        )
     }
 }
