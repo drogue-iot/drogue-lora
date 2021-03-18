@@ -122,6 +122,12 @@ impl core::fmt::Display for EUI {
     }
 }
 
+impl core::convert::From<[u8; 8]> for EUI {
+    fn from(input: [u8; 8]) -> Self {
+        Self(input)
+    }
+}
+
 impl core::convert::From<&str> for DevAddr {
     fn from(input: &str) -> Self {
         assert!(input.len() >= 8);
@@ -140,6 +146,12 @@ impl core::fmt::Display for DevAddr {
             "{:02x}{:02x}{:02x}{:02x}",
             self.0[0], self.0[1], self.0[2], self.0[3]
         )
+    }
+}
+
+impl core::convert::From<[u8; 4]> for DevAddr {
+    fn from(input: [u8; 4]) -> Self {
+        Self(input)
     }
 }
 
@@ -167,6 +179,12 @@ impl core::fmt::Display for AppKey {
     }
 }
 
+impl core::convert::From<[u8; 16]> for AppKey {
+    fn from(input: [u8; 16]) -> Self {
+        Self(input)
+    }
+}
+
 impl core::convert::From<&str> for NwksKey {
     fn from(input: &str) -> Self {
         assert!(input.len() >= 32);
@@ -191,6 +209,12 @@ impl core::fmt::Display for NwksKey {
     }
 }
 
+impl core::convert::From<[u8; 16]> for NwksKey {
+    fn from(input: [u8; 16]) -> Self {
+        Self(input)
+    }
+}
+
 impl core::convert::From<&str> for AppsKey {
     fn from(input: &str) -> Self {
         assert!(input.len() >= 32);
@@ -212,5 +236,11 @@ impl core::fmt::Display for AppsKey {
             self.0[8], self.0[9], self.0[10], self.0[11],
             self.0[12], self.0[13], self.0[14], self.0[15],
         )
+    }
+}
+
+impl core::convert::From<[u8; 16]> for AppsKey {
+    fn from(input: [u8; 16]) -> Self {
+        Self(input)
     }
 }
