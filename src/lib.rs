@@ -128,6 +128,12 @@ impl core::convert::From<[u8; 8]> for EUI {
     }
 }
 
+impl core::convert::From<EUI> for [u8; 8] {
+    fn from(input: EUI) -> Self {
+        input.0
+    }
+}
+
 impl core::convert::From<&str> for DevAddr {
     fn from(input: &str) -> Self {
         assert!(input.len() >= 8);
@@ -152,6 +158,12 @@ impl core::fmt::Display for DevAddr {
 impl core::convert::From<[u8; 4]> for DevAddr {
     fn from(input: [u8; 4]) -> Self {
         Self(input)
+    }
+}
+
+impl core::convert::From<DevAddr> for [u8; 4] {
+    fn from(input: DevAddr) -> Self {
+        input.0
     }
 }
 
@@ -185,6 +197,12 @@ impl core::convert::From<[u8; 16]> for AppKey {
     }
 }
 
+impl core::convert::From<AppKey> for [u8; 16] {
+    fn from(input: AppKey) -> Self {
+        input.0
+    }
+}
+
 impl core::convert::From<&str> for NwksKey {
     fn from(input: &str) -> Self {
         assert!(input.len() >= 32);
@@ -215,6 +233,12 @@ impl core::convert::From<[u8; 16]> for NwksKey {
     }
 }
 
+impl core::convert::From<NwksKey> for [u8; 16] {
+    fn from(input: NwksKey) -> Self {
+        input.0
+    }
+}
+
 impl core::convert::From<&str> for AppsKey {
     fn from(input: &str) -> Self {
         assert!(input.len() >= 32);
@@ -242,5 +266,33 @@ impl core::fmt::Display for AppsKey {
 impl core::convert::From<[u8; 16]> for AppsKey {
     fn from(input: [u8; 16]) -> Self {
         Self(input)
+    }
+}
+
+impl core::convert::From<AppsKey> for [u8; 16] {
+    fn from(input: AppsKey) -> Self {
+        input.0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    extern crate std;
+    use super::*;
+
+    #[test]
+    fn test_conversion() {
+        let s = "AABBCCDDEEFF0011";
+        let eui: EUI = s.into();
+        let data: [u8; 8] = eui.into();
+
+        assert_eq!(data[0], 0xAA);
+        assert_eq!(data[1], 0xBB);
+        assert_eq!(data[2], 0xCC);
+        assert_eq!(data[3], 0xDD);
+        assert_eq!(data[4], 0xEE);
+        assert_eq!(data[5], 0xFF);
+        assert_eq!(data[6], 0x00);
+        assert_eq!(data[7], 0x11);
     }
 }
