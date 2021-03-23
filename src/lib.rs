@@ -101,6 +101,20 @@ impl LoraConfig {
     }
 }
 
+impl EUI {
+    pub fn reverse(&self) -> Self {
+        let mut idx = 0;
+        let mut output: [u8; 8] = self.0;
+        let end = output.len();
+        while idx < end / 2 {
+            output[idx] = self.0[end - idx - 1];
+            output[end - idx - 1] = self.0[idx];
+            idx += 1;
+        }
+        Self(output)
+    }
+}
+
 impl core::convert::From<&str> for EUI {
     fn from(input: &str) -> Self {
         assert!(input.len() >= 16);
@@ -134,6 +148,20 @@ impl core::convert::From<EUI> for [u8; 8] {
     }
 }
 
+impl DevAddr {
+    pub fn reverse(&self) -> Self {
+        let mut idx = 0;
+        let mut output: [u8; 4] = self.0;
+        let end = output.len();
+        while idx < end / 2 {
+            output[idx] = self.0[end - idx - 1];
+            output[end - idx - 1] = self.0[idx];
+            idx += 1;
+        }
+        Self(output)
+    }
+}
+
 impl core::convert::From<&str> for DevAddr {
     fn from(input: &str) -> Self {
         assert!(input.len() >= 8);
@@ -164,6 +192,24 @@ impl core::convert::From<[u8; 4]> for DevAddr {
 impl core::convert::From<DevAddr> for [u8; 4] {
     fn from(input: DevAddr) -> Self {
         input.0
+    }
+}
+
+fn reverse_16(s: &[u8; 16]) -> [u8; 16] {
+    let mut idx = 0;
+    let mut output: [u8; 16] = s.clone();
+    let end = output.len();
+    while idx < end / 2 {
+        output[idx] = s[end - idx - 1];
+        output[end - idx - 1] = s[idx];
+        idx += 1;
+    }
+    output
+}
+
+impl AppKey {
+    pub fn reverse(&self) -> Self {
+        Self(reverse_16(&self.0))
     }
 }
 
@@ -203,6 +249,12 @@ impl core::convert::From<AppKey> for [u8; 16] {
     }
 }
 
+impl NwksKey {
+    pub fn reverse(&self) -> Self {
+        Self(reverse_16(&self.0))
+    }
+}
+
 impl core::convert::From<&str> for NwksKey {
     fn from(input: &str) -> Self {
         assert!(input.len() >= 32);
@@ -236,6 +288,12 @@ impl core::convert::From<[u8; 16]> for NwksKey {
 impl core::convert::From<NwksKey> for [u8; 16] {
     fn from(input: NwksKey) -> Self {
         input.0
+    }
+}
+
+impl AppsKey {
+    pub fn reverse(&self) -> Self {
+        Self(reverse_16(&self.0))
     }
 }
 
@@ -294,5 +352,20 @@ mod tests {
         assert_eq!(data[5], 0xFF);
         assert_eq!(data[6], 0x00);
         assert_eq!(data[7], 0x11);
+    }
+
+    #[test]
+    fn test_reverse() {
+        let s = "AABBCCDDEEFF0011";
+        let eui: EUI = s.into();
+        let reversed: [u8; 8] = eui.reverse().into();
+        assert_eq!(0x11, reversed[0]);
+        assert_eq!(0x00, reversed[1]);
+        assert_eq!(0xFF, reversed[2]);
+        assert_eq!(0xEE, reversed[3]);
+        assert_eq!(0xDD, reversed[4]);
+        assert_eq!(0xCC, reversed[5]);
+        assert_eq!(0xBB, reversed[6]);
+        assert_eq!(0xAA, reversed[7]);
     }
 }
