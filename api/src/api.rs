@@ -7,21 +7,22 @@ pub trait LoraDriver {
     where
         Self: 'a;
     /// Configure the LoRa module with the provided config.
-    fn configure<'a>(&self, config: &'a LoraConfig) -> Self::ConfigureFuture<'a>;
+    fn configure<'a>(&'a mut self, config: &'a LoraConfig) -> Self::ConfigureFuture<'a>;
 
+    /*
     type ResetFuture: Future<Output = Result<(), LoraError>>;
     /// Reset the LoRa module.
-    fn reset(&self, mode: ResetMode) -> Self::ResetFuture;
+    fn reset(&mut self, mode: ResetMode) -> Self::ResetFuture;
 
     type JoinFuture: Future<Output = Result<(), LoraError>>;
     /// Join a LoRaWAN network with the given connect mode.
-    fn join(&self, mode: ConnectMode) -> Self::JoinFuture;
+    fn join(&mut self, mode: ConnectMode) -> Self::JoinFuture;
 
     type SendFuture<'a>: Future<Output = Result<(), LoraError>>
     where
         Self: 'a;
     /// Send data on a specific port with a given quality of service.
-    fn send<'a>(&self, qos: QoS, port: Port, data: &'a [u8]) -> Self::SendFuture<'a>;
+    fn send<'a>(&mut self, qos: QoS, port: Port, data: &'a [u8]) -> Self::SendFuture<'a>;
 
     type SendRecvFuture<'a>: Future<Output = Result<usize, LoraError>>
     where
@@ -29,12 +30,12 @@ pub trait LoraDriver {
     /// Send data on a specific port with a given quality of service. If the LoRa module receives
     /// any data as part of the confirmation, write it into the provided buffer and return the size of the data read.
     fn send_recv<'a>(
-        &self,
+        &mut self,
         qos: QoS,
         port: Port,
         data: &'a [u8],
         rx: &'a mut [u8],
-    ) -> Self::SendRecvFuture<'a>;
+    ) -> Self::SendRecvFuture<'a>;*/
 }
 
 #[derive(Debug)]

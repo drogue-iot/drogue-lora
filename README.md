@@ -4,4 +4,4 @@
 [![docs.rs](https://docs.rs/drogue-lora/badge.svg)](https://docs.rs/drogue-lora)
 [![Matrix](https://img.shields.io/matrix/drogue-iot:matrix.org)](https://matrix.to/#/#drogue-iot:matrix.org)
 
-LoRa protocol type definitions. These definitions are shared amongst different LoRa drivers.
+This repository contains an API for writing async LoRa drivers, and drivers for different LoRa chips, such as Semtech sx127x, that implement this API. 

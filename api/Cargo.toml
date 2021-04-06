@@ -1,0 +1,12 @@
+[package]
+name = "drogue-lora"
+version = "0.1.1"
+authors = ["Ulf Lilleengen <lulf@redhat.com>"]
+edition = "2018"
+license = "Apache-2.0"
+description = "Generic types and async API for LoRa drivers"
+readme = "README.md"
+repository = "https://github.com/drogue-iot/drogue-lora"
+homepage = "https://blog.drogue.io"
+categories = ["embedded", "no-std", "network-programming"]
+keywords = ["driver", "network", "lora", "no_std"]
