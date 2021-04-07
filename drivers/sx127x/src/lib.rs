@@ -36,39 +36,35 @@ where
     Configured(LorawanDevice<Radio<SPI, CS, RESET, E>, Crypto>),
 }
 
-pub struct Sx127xDriver<SPI, CS, RESET, BUSY, E>
+pub struct Sx127xDriver<SPI, CS, RESET, E>
 where
     SPI: Transfer<u8, Error = E> + Write<u8, Error = E> + 'static,
     CS: OutputPin + 'static,
     RESET: OutputPin + 'static,
-    BUSY: InputPin + 'static,
     E: 'static,
 {
     state: Option<DriverState<SPI, CS, RESET, E>>,
     //   response: Option<&'static Signal<ControllerResponse>>,
-    busy: BUSY,
     get_random: fn() -> u32,
 }
 
-impl<SPI, CS, RESET, BUSY, E> Sx127xDriver<SPI, CS, RESET, BUSY, E>
+impl<SPI, CS, RESET, E> Sx127xDriver<SPI, CS, RESET, E>
 where
     SPI: Transfer<u8, Error = E> + Write<u8, Error = E> + 'static,
     CS: OutputPin + 'static,
     RESET: OutputPin + 'static,
-    BUSY: InputPin + 'static,
 {
     pub fn new(
         spi: SPI,
         cs: CS,
         reset: RESET,
-        busy: BUSY,
         delay: &mut dyn DelayMs<u8>,
         get_random: fn() -> u32,
     ) -> Result<Self, LoraError> {
         let radio = Radio::new(spi, cs, reset, delay)?;
+        log::info!("Radio created!");
         Ok(Self {
             state: Some(DriverState::Initialized(radio)),
-            busy,
             get_random,
         })
     }
@@ -78,29 +74,29 @@ where
             DriverState::Configured(lorawan) => {
                 match &event {
                     LorawanEvent::NewSessionRequest => {
-                        defmt::trace!("New Session Request");
+                        log::trace!("New Session Request");
                     }
                     LorawanEvent::RadioEvent(e) => match e {
                         radio::Event::TxRequest(_, _) => (),
                         radio::Event::RxRequest(_) => (),
                         radio::Event::CancelRx => (),
                         radio::Event::PhyEvent(phy) => {
-                            // defmt::info!("Phy event");
+                            // log::info!("Phy event");
                         }
                     },
                     LorawanEvent::TimeoutFired => (),
                     LorawanEvent::SendDataRequest(_e) => {
-                        defmt::trace!("SendData");
+                        log::trace!("SendData");
                     }
                 }
                 // log_stack("Handling event");
                 let (mut new_state, response) = lorawan.handle_event(event);
-                // defmt::info!("Event handled");
+                // log::info!("Event handled");
                 self.process_response(&mut new_state, response);
                 self.state.replace(DriverState::Configured(new_state));
             }
             s => {
-                defmt::info!("Not yet configured, event processing skipped");
+                log::info!("Not yet configured, event processing skipped");
                 self.state.replace(s);
             }
         }
@@ -114,7 +110,7 @@ where
         match response {
             Ok(response) => match response {
                 LorawanResponse::TimeoutRequest(ms) => {
-                    defmt::trace!("TimeoutRequest: {:?}", ms);
+                    log::trace!("TimeoutRequest: {:?}", ms);
                     /*self.scheduler.as_ref().unwrap().schedule(
                         Milliseconds(ms),
                         LorawanEvent::TimeoutFired,
@@ -122,11 +118,11 @@ where
                     );*/
                 }
                 LorawanResponse::JoinSuccess => {
-                    // defmt::trace!("Join Success: {:?}", lorawan.get_session_keys().unwrap());
+                    // log::trace!("Join Success: {:?}", lorawan.get_session_keys().unwrap());
                     // self.response.as_ref().unwrap().signal(Ok(None));
                 }
                 LorawanResponse::ReadyToSend => {
-                    defmt::trace!("RxWindow expired but no ACK expected. Ready to Send");
+                    log::trace!("RxWindow expired but no ACK expected. Ready to Send");
                 }
                 LorawanResponse::DownlinkReceived(fcnt_down) => {
                     if let Some(downlink) = lorawan.take_data_downlink() {
@@ -135,7 +131,7 @@ where
                         use lorawan_encoding::parser::{DataHeader, FRMPayload};
 
                         if let Ok(FRMPayload::Data(data)) = downlink.frm_payload() {
-                            defmt::trace!(
+                            log::trace!(
                                 "Downlink received \t\t(FCntDown={}\tFRM: {:?})",
                                 fcnt_down,
                                 data,
@@ -145,53 +141,51 @@ where
                             //     self.response.as_ref().unwrap().signal(Ok(Some(v)));
                         } else {
                             //    self.response.as_ref().unwrap().signal(Ok(None));
-                            defmt::trace!("Downlink received \t\t(FcntDown={})", fcnt_down);
+                            log::trace!("Downlink received \t\t(FcntDown={})", fcnt_down);
                         }
 
                         let mut mac_commands_len = 0;
                         for mac_command in fopts {
                             if mac_commands_len == 0 {
-                                defmt::trace!("\tFOpts: ");
+                                log::trace!("\tFOpts: ");
                             }
-                            // defmt::trace!("{:?},", mac_command);
+                            // log::trace!("{:?},", mac_command);
                             mac_commands_len += 1;
                         }
                     }
                 }
                 LorawanResponse::NoAck => {
-                    defmt::trace!(
-                        "RxWindow expired, expected ACK to confirmed uplink not received"
-                    );
+                    log::trace!("RxWindow expired, expected ACK to confirmed uplink not received");
                     //self.response.as_ref().unwrap().signal(Ok(None));
                 }
                 LorawanResponse::NoJoinAccept => {
-                    defmt::info!("No Join Accept Received. Retrying.");
+                    log::info!("No Join Accept Received. Retrying.");
                     /*self.me
                     .as_ref()
                     .unwrap()
                     .notify(LorawanEvent::NewSessionRequest);*/
                 }
                 LorawanResponse::SessionExpired => {
-                    defmt::info!("SessionExpired. Created new Session");
+                    log::info!("SessionExpired. Created new Session");
                     /*self.me
                     .as_ref()
                     .unwrap()
                     .notify(LorawanEvent::NewSessionRequest);*/
                 }
                 LorawanResponse::NoUpdate => {
-                    // defmt::info!("No update");
+                    // log::info!("No update");
                 }
                 LorawanResponse::UplinkSending(fcnt_up) => {
-                    defmt::trace!("Uplink with FCnt {}", fcnt_up);
+                    log::trace!("Uplink with FCnt {}", fcnt_up);
                 }
                 LorawanResponse::JoinRequestSending => {
-                    defmt::trace!("Join Request Sending");
+                    log::trace!("Join Request Sending");
                 }
             },
             Err(err) => match err {
-                LorawanError::Radio(_) => defmt::error!("Radio error"),
-                LorawanError::Session(e) => defmt::error!("Session error"), //{:?}", e),
-                LorawanError::NoSession(_) => defmt::error!("NoSession error"),
+                LorawanError::Radio(_) => log::error!("Radio error"),
+                LorawanError::Session(e) => log::error!("Session error"), //{:?}", e),
+                LorawanError::NoSession(_) => log::error!("NoSession error"),
             },
         }
     }
@@ -227,7 +221,7 @@ where
     fn poll(mut self: core::pin::Pin<&mut Self>, _: &mut Context<'_>) -> Poll<Self::Output> {
         match self.state.take().unwrap() {
             DriverState::Initialized(radio) => {
-                //defmt::info!("Configuring radio");
+                //log::info!("Configuring radio");
                 let dev_eui = self
                     .config
                     .device_eui
@@ -235,7 +229,7 @@ where
                     .expect("device EUI must be set");
                 let app_eui = self.config.app_eui.as_ref().expect("app EUI must be set");
                 let app_key = self.config.app_key.as_ref().expect("app KEY must be set");
-                //defmt::info!("Creating device");
+                //log::info!("Creating device");
                 let lorawan: LorawanDevice<Radio<SPI, CS, RESET, E>, Crypto> = LorawanDevice::new(
                     region::EU868::default().into(),
                     radio,
@@ -249,7 +243,7 @@ where
                 Poll::Ready(Ok(()))
             }
             other => {
-                //defmt::info!("Driver not yet initialized, ignoring configuration");
+                //log::info!("Driver not yet initialized, ignoring configuration");
                 self.state.replace(other);
                 Poll::Ready(Err(LoraError::OtherError))
             }
@@ -257,12 +251,11 @@ where
     }
 }
 
-impl<SPI, CS, RESET, BUSY, E> LoraDriver for Sx127xDriver<SPI, CS, RESET, BUSY, E>
+impl<SPI, CS, RESET, E> LoraDriver for Sx127xDriver<SPI, CS, RESET, E>
 where
     SPI: Transfer<u8, Error = E> + Write<u8, Error = E> + 'static,
     CS: OutputPin + 'static,
     RESET: OutputPin + 'static,
-    BUSY: InputPin,
 {
     type ConfigureFuture<'a> = Sx127xConfigure<'a, SPI, CS, RESET, E>;
     fn configure<'a>(&'a mut self, config: &'a LoraConfig) -> Self::ConfigureFuture<'a> {
@@ -309,7 +302,7 @@ where
                         (self, Ok(()))
                     }
                     other => {
-                        //defmt::info!("Driver not yet initialized, ignoring configuration");
+                        //log::info!("Driver not yet initialized, ignoring configuration");
                         state.replace(other);
                         (self, Err(LoraError::OtherError))
                     }

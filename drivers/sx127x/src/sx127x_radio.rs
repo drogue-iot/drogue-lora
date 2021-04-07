@@ -78,7 +78,7 @@ where
     ) -> (State, Result<LoraResponse<Self>, LoraError<Self>>) {
         match event {
             LoraEvent::TxRequest(config, buf) => {
-                //defmt::trace!("Set config: {:?}", config);
+                //log::trace!("Set config: {:?}", config);
                 let result = (move || {
                     self.radio.set_tx_power(14, 0)?;
                     self.radio.set_frequency(config.rf.frequency)?;
@@ -108,7 +108,7 @@ where
                 }
             }
             LoraEvent::RxRequest(config) => {
-                // defmt::trace!("Set RX config: {:?}", config);
+                // log::trace!("Set RX config: {:?}", config);
                 let result = (move || {
                     self.radio.reset_payload_length()?;
                     self.radio.set_frequency(config.frequency)?;
@@ -130,7 +130,7 @@ where
                     /*
                     let irq_flags = self.radio.irq_flags().ok().unwrap();
                     let irq_flags_mask = self.radio.irq_flags_mask().ok().unwrap();
-                    defmt::info!(
+                    log::info!(
                         "RX STARTED, IRQ Flags: 0x{:x}, Mask: 0x{:x}",
                         irq_flags,
                         irq_flags_mask
